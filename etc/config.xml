@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!--
+ /************************************************************
+ * *
+ *  * Copyright © Boolfly. All rights reserved.
+ *  * See COPYING.txt for license details.
+ *  *
+ *  * @author    info@boolfly.com
+ * *  @project   ZaloPay
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <zalopay>
+                <active>1</active>
+                <model>ZaloPayFacade</model>
+                <key1 backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+                <key2 backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+                <sandbox_flag>1</sandbox_flag>
+                <order_status>processing</order_status>
+                <title>ZaloPay</title>
+                <allowspecific>1</allowspecific>
+                <specificcountry>VN,US</specificcountry>
+                <payment_action>authorize_capture</payment_action>
+                <payment_url>https://zalopay.com.vn/</payment_url>
+                <staging_payment_url>https://stg.zalopay.com.vn/</staging_payment_url>
+                <sandbox_payment_url>https://sandbox.zalopay.com.vn/</sandbox_payment_url>
+                <can_initialize>1</can_initialize>
+                <can_authorize>0</can_authorize>
+                <can_capture>1</can_capture>
+                <can_capture_partial>0</can_capture_partial>
+                <can_void>0</can_void>
+                <can_refund>1</can_refund>
+                <debug>1</debug>
+                <can_refund_partial_per_invoice>0</can_refund_partial_per_invoice>
+                <can_use_internal>1</can_use_internal>
+                <can_use_checkout>1</can_use_checkout>
+                <is_gateway>1</is_gateway>
+                <debugReplaceKeys>key_1,key_2</debugReplaceKeys>
+                <paymentInfoKeys>transaction_type,transaction_id,response_code,fraud_messages,approve_messages</paymentInfoKeys>
+            </zalopay>
+        </payment>
+    </default>
+</config>

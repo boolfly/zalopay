@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<!--
+ /************************************************************
+ * *
+ *  * Copyright © Boolfly. All rights reserved.
+ *  * See COPYING.txt for license details.
+ *  *
+ *  * @author    info@boolfly.com
+ * *  @project   ZaloPay
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <virtualType name="ZaloPayConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="string">zalopay</argument>
+        </arguments>
+
+    </virtualType>
+    <virtualType name="ZaloPayLogger" type="Magento\Payment\Model\Method\Logger">
+        <arguments>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+        </arguments>
+    </virtualType>
+    <type name="Boolfly\ZaloPay\Gateway\Helper\Authorization">
+        <arguments>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+        </arguments>
+    </type>
+    <virtualType name="ZaloPayTransferFactory" type="Boolfly\ZaloPay\Gateway\Http\TransferFactory">
+        <arguments>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+            <argument name="urlPath" xsi:type="const">Boolfly\ZaloPay\Gateway\Request\AbstractDataBuilder::PAY_URL_PATH</argument>
+        </arguments>
+    </virtualType>
+    <type name="Boolfly\ZaloPay\Block\Info">
+        <arguments>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+        </arguments>
+    </type>
+    <virtualType name="ZaloPayFacade" type="Magento\Payment\Model\Method\Adapter">
+        <arguments>
+            <argument name="code" xsi:type="string">zalopay</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Boolfly\ZaloPay\Block\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">ZaloPayValueHandlerPool</argument>
+            <argument name="validatorPool" xsi:type="object">ZaloPayValidatorPool</argument>
+            <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ZaloPayValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">ZaloPayDefaultValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ZaloPayDefaultValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">ZaloPayConfig</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ZaloPayValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country" xsi:type="string">ZaloPayCountryValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ZaloPayCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ZaloPayZendHttpClient" type="Boolfly\ZaloPay\Gateway\Http\Client\Zend">
+        <arguments>
+            <argument name="logger" xsi:type="object">ZaloPayLogger</argument>
+            <argument name="converter" xsi:type="object">Boolfly\ZaloPay\Gateway\Http\Converter\JsonToArray</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ZaloPayCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="initialize" xsi:type="string">Boolfly\ZaloPay\Gateway\Command\InitializeCommand</item>
+                <item name="get_pay_url" xsi:type="string">Boolfly\ZaloPay\Gateway\Command\GetPayUrlCommand</item>
+                <item name="capture" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
+                <item name="ipn" xsi:type="string">Boolfly\ZaloPay\Gateway\Command\CompleteCommand</item>
+                <item name="complete" xsi:type="string">Boolfly\ZaloPay\Gateway\Command\CompleteCommand</item>
+                <item name="cancel_order" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
+                <item name="refund" xsi:type="string">ZaloPayRefundGatewayCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Boolfly\ZaloPay\Gateway\Command\GetPayUrlCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">ZaloPayPayUrlDataBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">ZaloPayTransferFactory</argument>
+            <argument name="client" xsi:type="object">ZaloPayZendHttpClient</argument>
+            <argument name="validator" xsi:type="object">Boolfly\ZaloPay\Gateway\Validator\GetPayUrlValidator</argument>
+        </arguments>
+    </type>
+    <virtualType name="ZaloPayPayUrlDataBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="zalo_app_info" xsi:type="string">Boolfly\ZaloPay\Gateway\Request\ZaloAppInfoDataBuilder</item>
+                <item name="item_details" xsi:type="string">Boolfly\ZaloPay\Gateway\Request\ItemDetailsDataBuilder</item>
+                <item name="order_additional_information" xsi:type="string">Boolfly\ZaloPay\Gateway\Request\OrderAdditionalInformationDataBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Boolfly\ZaloPay\Gateway\Command\UpdateDetailsCommand">
+        <arguments>
+            <argument name="validator" xsi:type="object">Boolfly\ZaloPay\Gateway\Validator\CompleteValidator</argument>
+            <argument name="handler" xsi:type="object">Boolfly\ZaloPay\Gateway\Response\TransactionCompleteHandler</argument>
+        </arguments>
+    </type>
+    <type name="Boolfly\ZaloPay\Gateway\Request\ZaloAppInfoDataBuilder">
+        <arguments>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+        </arguments>
+    </type>
+    <type name="Boolfly\ZaloPay\Gateway\Command\UpdateOrderCommand">
+        <arguments>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+        </arguments>
+    </type>
+    <virtualType name="ZaloPayRefundGatewayCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">ZaloPayRefundDataBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">ZaloPayTransferFactory</argument>
+            <argument name="client" xsi:type="object">ZaloPayZendHttpClient</argument>
+            <argument name="handler" xsi:type="object">ZaloPayRefundResponseHandler</argument>
+            <argument name="validator" xsi:type="object">Boolfly\ZaloPay\Gateway\Validator\RefundValidator</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ZaloPayRefundDataBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="transaction_type" xsi:type="string">RefundTransactionDataBuilder</item>
+                <item name="refund_data" xsi:type="string">Boolfly\ZaloPay\Gateway\Request\RefundDataBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="RefundTransactionDataBuilder" type="Boolfly\ZaloPay\Gateway\Request\TransactionDataBuilder">
+        <arguments>
+            <argument name="requestType" xsi:type="const">Boolfly\ZaloPay\Gateway\Request\AbstractDataBuilder::REFUND_TYPE</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ZaloPayRefundResponseHandler" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="refund" xsi:type="string">Boolfly\ZaloPay\Gateway\Response\TransactionRefundHandler</item>
+                <item name="response_messages" xsi:type="string">Boolfly\ZaloPay\Gateway\Response\ResponseMessagesHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Boolfly\ZaloPay\Gateway\Request\RefundDataBuilder">
+        <arguments>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+        </arguments>
+    </type>
+</config>
