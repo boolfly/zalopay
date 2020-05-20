@@ -11,11 +11,10 @@ namespace Boolfly\ZaloPay\Gateway\Request;
 
 use Boolfly\ZaloPay\Gateway\Helper\Rate;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Payment\Gateway\ConfigInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
-use Magento\Sales\Model\Order\Creditmemo;
-use Magento\SalesSequence\Model\Manager;
 
 /**
  * Class TransactionIdDataBuilder
@@ -35,25 +34,25 @@ class RefundDataBuilder extends AbstractDataBuilder implements BuilderInterface
     private $helperRate;
 
     /**
-     * @var Manager
+     * @var DateTime
      */
-    private $sequenceManager;
+    private $dateTime;
 
     /**
      * RefundDataBuilder constructor.
      *
      * @param ConfigInterface $config
-     * @param Manager         $sequenceManager
+     * @param DateTime        $dateTime
      * @param Rate            $helperRate
      */
     public function __construct(
         ConfigInterface $config,
-        Manager $sequenceManager,
+        DateTime $dateTime,
         Rate $helperRate
     ) {
-        $this->config          = $config;
-        $this->helperRate      = $helperRate;
-        $this->sequenceManager = $sequenceManager;
+        $this->config     = $config;
+        $this->helperRate = $helperRate;
+        $this->dateTime   = $dateTime;
     }
 
     /**
@@ -67,46 +66,17 @@ class RefundDataBuilder extends AbstractDataBuilder implements BuilderInterface
         $paymentDO = SubjectReader::readPayment($buildSubject);
         $amount    = round((float)SubjectReader::readAmount($buildSubject), 2);
         $payment   = $paymentDO->getPayment();
-
-        /** @var Creditmemo $creditMemo */
-        $creditMemo = $payment->getCreditmemo();
-        if ($creditMemo && !$creditMemo->getIncrementId()) {
-            $this->setIncrementId($creditMemo);
-        }
+        $timestamp = $this->dateTime->timestamp() * 1000;
+        $uid       = $timestamp . rand(111, 999);
+        $appId     = $this->config->getValue(self::APP_ID);
 
         return [
-            self::AMOUNT => (string) $this->helperRate->getVndAmount($payment->getOrder(), $amount),
-            self::ORDER_ID => $this->getCreditMemoPrefix() . $creditMemo->getIncrementId(),
-            self::TRANSACTION_ID => $payment->getParentTransactionId()
+            self::APP_ID => $appId,
+            self::M_REFUND_ID => $this->dateTime->gmtDate('ymd') . '_' . $appId . '_' . $uid,
+            self::TIMESTAMP => $timestamp,
+            self::ZP_TRANS_ID => $payment->getParentTransactionId(),
+            self::AMOUNT => (int) $this->helperRate->getVndAmount($payment->getOrder(), $amount),
+            self::DESCRIPTION => 'ZaloPay Integration for Magento 2',
         ];
-    }
-
-    /**
-     * @param Creditmemo $creditMemo
-     * @throws LocalizedException
-     */
-    private function setIncrementId($creditMemo)
-    {
-        $store   = $creditMemo->getStore();
-        $storeId = $store->getId();
-        if ($storeId === null) {
-            $storeId = $store->getGroup()->getDefaultStoreId();
-        }
-        $creditMemo->setIncrementId(
-            $this->sequenceManager->getSequence(
-                $creditMemo->getEntityType(),
-                $storeId
-            )->getNextValue()
-        );
-    }
-
-    /**
-     * Get Credit Memo Prefix
-     *
-     * @return mixed
-     */
-    private function getCreditMemoPrefix()
-    {
-        return $this->config->getValue('credit_memo_prefix');
     }
 }

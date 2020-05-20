@@ -43,6 +43,16 @@ abstract class AbstractResponseValidator extends AbstractValidator
     const TRANSACTION_ID = 'transId';
 
     /**
+     * ZaloPay Trans ID
+     */
+    const ZP_TRANS_ID = 'zptransid';
+
+    /**
+     * Refund Id
+     */
+    const REFUND_ID = 'refundid';
+
+    /**
      * Error Code
      */
     const ERROR_CODE = 'errorCode';
@@ -63,29 +73,19 @@ abstract class AbstractResponseValidator extends AbstractValidator
     const RETURN_CODE_ACCEPT = 1;
 
     /**
+     * Refund Code Accept
+     */
+    const REFUND_CODE_ACCEPT = 2;
+
+    /**
      * Message
      */
-    const RESPONSE_MESSAGE = 'message';
+    const RESPONSE_MESSAGE = 'returnmessage';
 
     /**
-     * Local Response
+     * Trans Data
      */
-    const RESPONSE_LOCAL_MESSAGE = 'localMessage';
-
-    /**
-     * Order Type
-     */
-    const ORDER_TYPE = 'orderType';
-
-    /**
-     * Response Time
-     */
-    const RESPONSE_TIME = 'responseTime';
-
-    /**
-     * Pay type: qr or web
-     */
-    const PAY_TYPE = 'payType';
+    const TRANS_DATA = 'trans_data';
 
     /**
      * @var Rate
@@ -140,7 +140,7 @@ abstract class AbstractResponseValidator extends AbstractValidator
      */
     protected function validateTransactionId(array $response)
     {
-        return isset($response[self::TRANSACTION_ID])
-            && $response[self::TRANSACTION_ID];
+        return isset($response[AbstractResponseValidator::TRANS_DATA][AbstractResponseValidator::ZP_TRANS_ID])
+            && $response[AbstractResponseValidator::TRANS_DATA][AbstractResponseValidator::ZP_TRANS_ID];
     }
 }

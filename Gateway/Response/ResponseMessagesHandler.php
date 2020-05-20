@@ -34,7 +34,7 @@ class ResponseMessagesHandler implements HandlerInterface
         $payment = $paymentDO->getPayment();
         ContextHelper::assertOrderPayment($payment);
 
-        $responseCode = $response[AbstractResponseValidator::ERROR_CODE];
+        $responseCode = $response[AbstractResponseValidator::RETURN_CODE];
         $messages     = $response[AbstractResponseValidator::RESPONSE_MESSAGE];
         $state        = $this->getState($responseCode);
 
@@ -56,7 +56,7 @@ class ResponseMessagesHandler implements HandlerInterface
      */
     protected function getState($responseCode)
     {
-        if ((string)$responseCode !== '0') {
+        if ((string)$responseCode === '1' || (string)$responseCode === '2') {
             return false;
         }
         return true;

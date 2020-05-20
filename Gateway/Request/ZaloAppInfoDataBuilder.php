@@ -56,6 +56,7 @@ class ZaloAppInfoDataBuilder extends AbstractDataBuilder implements BuilderInter
     {
         $payment          = SubjectReader::readPayment($buildSubject);
         $orderIncrementId = $payment->getOrder()->getOrderIncrementId();
+
         return [
             self::APP_ID => $this->getConfig(self::APP_ID),
             self::APP_TIME => $this->dateTime->timestamp() * 1000,

@@ -13,10 +13,8 @@ use Boolfly\ZaloPay\Gateway\Helper\TransactionReader;
 use Magento\Framework\App\Action\Action as AppAction;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Session\SessionManager;
-use Magento\Framework\Webapi\Exception;
 use Magento\Payment\Gateway\Command\CommandPoolInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectFactory;
 use Magento\Payment\Gateway\Helper\ContextHelper;
@@ -132,7 +130,7 @@ class Start extends AppAction
                 $commandResult     = $this->commandPool->get('get_pay_url')->execute(
                     [
                         'payment' => $paymentDataObject,
-                        'amount' => 15,
+                        'amount' => $order->getTotalDue(),
                     ]
                 );
 
@@ -146,7 +144,7 @@ class Start extends AppAction
             $this->logger->critical($e);
 
             $this->messageManager->addErrorMessage(__('Sorry, but something went wrong.'));
-            return $this->_redirect('checkout/cart/*');
+            return $this->_redirect('checkout/cart/index');
         }
     }
 }

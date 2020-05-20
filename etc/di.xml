@@ -86,11 +86,10 @@
                 <item name="ipn" xsi:type="string">Boolfly\ZaloPay\Gateway\Command\CompleteCommand</item>
                 <item name="complete" xsi:type="string">Boolfly\ZaloPay\Gateway\Command\CompleteCommand</item>
                 <item name="cancel_order" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
-                <item name="refund" xsi:type="string">ZaloPayRefundGatewayCommand</item>
+                <item name="refund" xsi:type="string">Boolfly\ZaloPay\Gateway\Command\RefundCommand</item>
             </argument>
         </arguments>
     </virtualType>
-
     <type name="Boolfly\ZaloPay\Gateway\Command\GetPayUrlCommand">
         <arguments>
             <argument name="requestBuilder" xsi:type="object">ZaloPayPayUrlDataBuilder</argument>
@@ -98,6 +97,7 @@
             <argument name="client" xsi:type="object">ZaloPayZendHttpClient</argument>
             <argument name="validator" xsi:type="object">Boolfly\ZaloPay\Gateway\Validator\GetPayUrlValidator</argument>
         </arguments>
+        <plugin name="generateMac" type="Boolfly\ZaloPay\Plugin\Gateway\Command\PayUrlGenerateMac"/>
     </type>
     <virtualType name="ZaloPayPayUrlDataBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">
         <arguments>
@@ -125,26 +125,28 @@
             <argument name="config" xsi:type="object">ZaloPayConfig</argument>
         </arguments>
     </type>
-    <virtualType name="ZaloPayRefundGatewayCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+    <type name="Boolfly\ZaloPay\Gateway\Command\RefundCommand">
         <arguments>
             <argument name="requestBuilder" xsi:type="object">ZaloPayRefundDataBuilder</argument>
-            <argument name="transferFactory" xsi:type="object">ZaloPayTransferFactory</argument>
+            <argument name="transferFactory" xsi:type="object">ZaloPayRefundTransferFactory</argument>
             <argument name="client" xsi:type="object">ZaloPayZendHttpClient</argument>
             <argument name="handler" xsi:type="object">ZaloPayRefundResponseHandler</argument>
             <argument name="validator" xsi:type="object">Boolfly\ZaloPay\Gateway\Validator\RefundValidator</argument>
         </arguments>
-    </virtualType>
+        <plugin name="generateMac" type="Boolfly\ZaloPay\Plugin\Gateway\Command\RefundGenerateMac"/>
+    </type>
     <virtualType name="ZaloPayRefundDataBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">
         <arguments>
             <argument name="builders" xsi:type="array">
-                <item name="transaction_type" xsi:type="string">RefundTransactionDataBuilder</item>
                 <item name="refund_data" xsi:type="string">Boolfly\ZaloPay\Gateway\Request\RefundDataBuilder</item>
             </argument>
         </arguments>
+        <plugin name="generateMac" type="Boolfly\ZaloPay\Plugin\Gateway\Command\RefundGenerateMac"/>
     </virtualType>
-    <virtualType name="RefundTransactionDataBuilder" type="Boolfly\ZaloPay\Gateway\Request\TransactionDataBuilder">
+    <virtualType name="ZaloPayRefundTransferFactory" type="Boolfly\ZaloPay\Gateway\Http\TransferFactory">
         <arguments>
-            <argument name="requestType" xsi:type="const">Boolfly\ZaloPay\Gateway\Request\AbstractDataBuilder::REFUND_TYPE</argument>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+            <argument name="urlPath" xsi:type="const">Boolfly\ZaloPay\Gateway\Request\AbstractDataBuilder::REFUND_URL_PATH</argument>
         </arguments>
     </virtualType>
     <virtualType name="ZaloPayRefundResponseHandler" type="Magento\Payment\Gateway\Response\HandlerChain">

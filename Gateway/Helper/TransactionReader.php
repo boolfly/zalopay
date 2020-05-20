@@ -11,6 +11,7 @@ namespace Boolfly\ZaloPay\Gateway\Helper;
 
 use Boolfly\ZaloPay\Gateway\Request\AbstractDataBuilder;
 use Boolfly\ZaloPay\Gateway\Validator\AbstractResponseValidator;
+use Magento\Framework\Serialize\Serializer\Json as SerializerJson;
 
 /**
  * Class TransactionReader
@@ -19,7 +20,6 @@ use Boolfly\ZaloPay\Gateway\Validator\AbstractResponseValidator;
  */
 class TransactionReader
 {
-
     /**
      * Is IPN request
      */
@@ -48,11 +48,11 @@ class TransactionReader
      */
     public static function readOrderId(array $transactionData)
     {
-        if (empty($transactionData[AbstractDataBuilder::ORDER_ID])) {
-            throw new \InvalidArgumentException('Order Id doesn\'t exit');
+        if (empty($transactionData[AbstractDataBuilder::TRANS_DATA][AbstractDataBuilder::APP_TRANS_ID])) {
+            throw new \InvalidArgumentException('Order Id doesn\'t exist');
         }
 
-        return $transactionData[AbstractDataBuilder::ORDER_ID];
+        return explode('_', $transactionData[AbstractDataBuilder::TRANS_DATA][AbstractDataBuilder::APP_TRANS_ID])[1];
     }
 
     /**

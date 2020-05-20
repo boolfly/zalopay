@@ -60,7 +60,6 @@ class UpdateOrderCommand implements CommandInterface
     public function execute(array $commandSubject)
     {
         $paymentDO = SubjectReader::readPayment($commandSubject);
-
         /** @var Payment $payment */
         $payment = $paymentDO->getPayment();
         $order   = $payment->getOrder();
@@ -72,12 +71,11 @@ class UpdateOrderCommand implements CommandInterface
                     $payment->capture();
                     break;
             }
-        }
-
-        if (TransactionReader::isIpn($commandSubject)) {
-            $message = __('IPN "%1"', SubjectReader::readResponse($commandSubject)[AbstractResponseValidator::RESPONSE_MESSAGE]);
-            $payment->prependMessage($message);
-            $order->addCommentToStatusHistory($message);
+            if (TransactionReader::isIpn($commandSubject)) {
+                $message = __('IPN "%1"', 'Success');
+                $payment->prependMessage($message);
+                $order->addCommentToStatusHistory($message);
+            }
         }
 
         $this->orderRepository->save($order);

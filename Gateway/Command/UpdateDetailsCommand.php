@@ -64,7 +64,7 @@ class UpdateDetailsCommand implements CommandInterface
         $payment = $paymentDO->getPayment();
         ContextHelper::assertOrderPayment($payment);
         $response = SubjectReader::readResponse($commandSubject);
-
+        $payment->getOrder()->setCanSendNewEmailFlag(true);
         if ($this->validator) {
             $result = $this->validator->validate(
                 array_merge(
@@ -80,7 +80,6 @@ class UpdateDetailsCommand implements CommandInterface
                 );
             }
         }
-
         if ($this->handler) {
             $this->handler->handle($commandSubject, $response);
         }

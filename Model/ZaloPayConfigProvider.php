@@ -12,6 +12,7 @@ namespace Boolfly\ZaloPay\Model;
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\Locale\ResolverInterface;
 use Magento\Framework\UrlInterface;
+use Magento\Framework\View\Asset\Repository;
 use Magento\Payment\Helper\Data as PaymentHelper;
 
 /**
@@ -21,16 +22,6 @@ use Magento\Payment\Helper\Data as PaymentHelper;
  */
 class ZaloPayConfigProvider implements ConfigProviderInterface
 {
-    /**
-     * ZaloPay Logo
-     */
-    const ZALOPAY_LOGO_SRC = 'https://static.zalopay.com.vn/stc/quydinh/ver181218/images/logozlp1.png';
-
-    /**
-     * @var ResolverInterface
-     */
-    protected $localeResolver;
-
     /**
      * @var PaymentHelper
      */
@@ -42,20 +33,25 @@ class ZaloPayConfigProvider implements ConfigProviderInterface
     protected $urlBuilder;
 
     /**
+     * @var Repository
+     */
+    private $assetRepository;
+
+    /**
      * ZaloPayConfigProvider constructor.
      *
-     * @param ResolverInterface $localeResolver
-     * @param PaymentHelper     $paymentHelper
-     * @param UrlInterface      $urlBuilder
+     * @param Repository    $assetRepository
+     * @param PaymentHelper $paymentHelper
+     * @param UrlInterface  $urlBuilder
      */
     public function __construct(
-        ResolverInterface $localeResolver,
+        Repository $assetRepository,
         PaymentHelper $paymentHelper,
         UrlInterface $urlBuilder
     ) {
-        $this->localeResolver = $localeResolver;
-        $this->paymentHelper  = $paymentHelper;
-        $this->urlBuilder     = $urlBuilder;
+        $this->paymentHelper   = $paymentHelper;
+        $this->urlBuilder      = $urlBuilder;
+        $this->assetRepository = $assetRepository;
     }
 
     /**
@@ -63,15 +59,13 @@ class ZaloPayConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {
-        $config = [
+        return [
             'payment' => [
                 'zalopay' => [
                     'redirectUrl' => $this->urlBuilder->getUrl('zalopay/payment/start'),
-                    'logoSrc' => self::ZALOPAY_LOGO_SRC
+                    'logoSrc' => $this->assetRepository->getUrl('Boolfly_ZaloPay::images/logo.png')
                 ]
             ]
         ];
-
-        return $config;
     }
 }

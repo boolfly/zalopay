@@ -29,15 +29,10 @@ class RefundValidator extends AbstractResponseValidator
     public function validate(array $validationSubject)
     {
         $response      = SubjectReader::readResponse($validationSubject);
-        $payment       = SubjectReader::readPayment($validationSubject);
-        $amount        = round($payment->getOrder()->getGrandTotalAmount(), 2);
-        $amount        = $this->helperRate->getVndAmount($payment->getPayment()->getOrder(), $amount);
         $errorMessages = [];
 
-        $validationResult = $this->validateTotalAmount($response, $amount)
-            && $this->validateTransactionId($response)
-            && $this->validateErrorCode($response)
-            && $this->validateSignature($response);
+        $validationResult = $this->validateRefundId($response)
+            && $this->validateReturnCode($response);
 
         if (!$validationResult) {
             $errorMessages = [__('Transaction has been declined. Please try again later.')];
@@ -47,33 +42,23 @@ class RefundValidator extends AbstractResponseValidator
     }
 
     /**
-     * Validate total amount.
-     *
-     * @param array               $response
-     * @param array|number|string $amount
+     * @param array $response
      * @return boolean
      */
-    protected function validateTotalAmount(array $response, $amount)
+    protected function validateRefundId(array $response)
     {
-        return isset($response[self::TOTAL_AMOUNT])
-            && (float)($response[self::TOTAL_AMOUNT]) <= (float)$amount;
+        return isset($response[AbstractResponseValidator::REFUND_ID])
+            && $response[AbstractResponseValidator::REFUND_ID];
     }
 
     /**
-     * @inheritDoc
+     * @param array $response
+     * @return boolean
      */
-    protected function getSignatureArray()
+    protected function validateReturnCode(array $response)
     {
-        return [
-            AbstractDataBuilder::PARTNER_CODE,
-            AbstractDataBuilder::ACCESS_KEY,
-            AbstractDataBuilder::REQUEST_ID,
-            AbstractDataBuilder::ORDER_ID,
-            self::ERROR_CODE,
-            self::TRANSACTION_ID,
-            self::RESPONSE_MESSAGE,
-            self::RESPONSE_LOCAL_MESSAGE,
-            AbstractDataBuilder::REQUEST_TYPE
-        ];
+        return isset($response[self::RETURN_CODE])
+            && ((string)$response[self::RETURN_CODE] === (string)self::RETURN_CODE_ACCEPT
+            || (string)$response[self::RETURN_CODE] === (string)self::REFUND_CODE_ACCEPT);
     }
 }

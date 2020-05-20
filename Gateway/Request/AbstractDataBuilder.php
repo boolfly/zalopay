@@ -25,9 +25,9 @@ abstract class AbstractDataBuilder implements BuilderInterface
     const PAY_URL_PATH = 'v001/tpe/createorder';
 
     /**
-     * Refund Url Path
+     * Refund path
      */
-    const REFUND_TYPE = 'refundZaloPay';
+    const REFUND_URL_PATH = 'v001/tpe/partialrefund';
 
     /**
      * Transaction Type: Refund
@@ -93,6 +93,26 @@ abstract class AbstractDataBuilder implements BuilderInterface
      * Amount
      */
     const AMOUNT = 'amount';
+
+    /**
+     * Transaction Data
+     */
+    const TRANS_DATA = 'trans_data';
+
+    /**@#%
+     * Refund Id
+     */
+    const M_REFUND_ID = 'mrefundid';
+
+    /**
+     * ZaloPay Trans ID
+     */
+    const ZP_TRANS_ID = 'zptransid';
+
+    /**
+     * Timestamp
+     */
+    const TIMESTAMP = 'timestamp';
 
     /**
      * Mac

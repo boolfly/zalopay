@@ -21,14 +21,10 @@ class TransferFactory extends AbstractTransferFactory
      */
     public function create(array $request)
     {
-        $header = $this->getAuthorization()
-            ->setParameter($request)
-            ->getHeaders();
-
         return $this->transferBuilder
             ->setMethod('POST')
-            ->setHeaders($header)
-            ->setBody($this->getAuthorization()->getParameter())
+            ->setHeaders($this->getAuthorization()->getHeaders())
+            ->setBody($request)
             ->setUri($this->getUrl())
             ->build();
     }

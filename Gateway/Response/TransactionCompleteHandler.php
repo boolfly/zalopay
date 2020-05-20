@@ -39,7 +39,7 @@ class TransactionCompleteHandler implements HandlerInterface
         $paymentDO = SubjectReader::readPayment($handlingSubject);
         /** @var Payment $orderPayment */
         $orderPayment = $paymentDO->getPayment();
-        $orderPayment->setTransactionId($response[AbstractResponseValidator::TRANSACTION_ID]);
+        $orderPayment->setTransactionId($response[AbstractResponseValidator::TRANS_DATA][AbstractResponseValidator::ZP_TRANS_ID]);
         $orderPayment->setIsTransactionClosed(false);
         $orderPayment->setShouldCloseParentTransaction(true);
 

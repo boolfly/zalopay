@@ -86,7 +86,7 @@ class GetPayUrlCommand implements CommandInterface
      */
     public function execute(array $commandSubject)
     {
-        $transferO = $this->transferFactory->create($this->requestBuilder->build($commandSubject));
+        $transferO = $this->transferFactory->create($this->buildRequestData($commandSubject));
         $response  = $this->client->placeRequest($transferO);
         $result    = $this->validator->validate(array_merge($commandSubject, ['response' => $response]));
 
@@ -101,5 +101,14 @@ class GetPayUrlCommand implements CommandInterface
                 ]
             ]
         );
+    }
+
+    /**
+     * @param array $commandSubject
+     * @return array
+     */
+    public function buildRequestData(array $commandSubject)
+    {
+        return $this->requestBuilder->build($commandSubject);
     }
 }

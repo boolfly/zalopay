@@ -51,25 +51,6 @@ class Authorization
     }
 
     /**
-     * Set Parameter
-     *
-     * @param $params
-     * @return $this
-     */
-    public function setParameter($params)
-    {
-        $newParams = [];
-        foreach ($this->getMacData() as $key) {
-            if (!empty($params[$key])) {
-                $newParams[] = $params[$key];
-            }
-        }
-        $params[AbstractDataBuilder::MAC] = $this->getMac($newParams);
-        $this->params                     = $params;
-        return $this;
-    }
-
-    /**
      * Get Mac string
      *
      * @param array $params
@@ -78,6 +59,17 @@ class Authorization
     public function getMac(array $params)
     {
         return hash_hmac('sha256', implode('|', $params), $this->getKey1());
+    }
+
+    /**
+     * Get Mac By Key 2
+     *
+     * @param string $transData
+     * @return string
+     */
+    public function getMacKey2(string $transData)
+    {
+        return hash_hmac('sha256', $transData, $this->getKey2());
     }
 
     /**

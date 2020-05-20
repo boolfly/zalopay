@@ -9,6 +9,7 @@
  */
 namespace Boolfly\ZaloPay\Gateway\Validator;
 
+use Boolfly\ZaloPay\Gateway\Helper\Authorization;
 use Boolfly\ZaloPay\Gateway\Helper\Rate;
 use Boolfly\ZaloPay\Gateway\Request\AbstractDataBuilder;
 use Magento\Payment\Gateway\Helper\SubjectReader;
@@ -23,6 +24,21 @@ class CompleteValidator extends AbstractResponseValidator
 {
 
     /**
+     * CompleteValidator constructor.
+     *
+     * @param ResultInterfaceFactory $resultFactory
+     * @param Authorization          $authorization
+     * @param Rate                   $helperRate
+     */
+    public function __construct(
+        ResultInterfaceFactory $resultFactory,
+        Authorization $authorization,
+        Rate $helperRate
+    ) {
+        parent::__construct($resultFactory, $authorization, $helperRate);
+    }
+
+    /**
      * @param array $validationSubject
      * @return \Magento\Payment\Gateway\Validator\ResultInterface
      * @throws \Magento\Framework\Exception\LocalizedException
@@ -30,22 +46,32 @@ class CompleteValidator extends AbstractResponseValidator
      */
     public function validate(array $validationSubject)
     {
-        $response      = SubjectReader::readResponse($validationSubject);
-        $amount        = round(SubjectReader::readAmount($validationSubject), 2);
-        $payment       = SubjectReader::readPayment($validationSubject);
-        $amount        = $this->helperRate->getVndAmount($payment->getPayment()->getOrder(), $amount);
-        $errorMessages = [];
-
+        $response         = SubjectReader::readResponse($validationSubject);
+        $amount           = round(SubjectReader::readAmount($validationSubject), 2);
+        $payment          = SubjectReader::readPayment($validationSubject);
+        $amount           = $this->helperRate->getVndAmount($payment->getPayment()->getOrder(), $amount);
         $validationResult = $this->validateTotalAmount($response, $amount)
             && $this->validateTransactionId($response)
-            && $this->validateErrorCode($response)
-            && $this->validateSignature($response);
+            && $this->validateMac($response);
 
+        $errorMessages = [];
         if (!$validationResult) {
             $errorMessages = [__('Transaction has been declined. Please try again later.')];
         }
 
         return $this->createResult($validationResult, $errorMessages);
+    }
+
+    /**
+     * Validate Mac By Key 2
+     *
+     * @param $response
+     * @return boolean
+     */
+    protected function validateMac($response)
+    {
+        $macKey2 = $this->authorization->getMacKey2($response['data']);
+        return $response[AbstractDataBuilder::MAC] === $macKey2;
     }
 
     /**
@@ -57,30 +83,7 @@ class CompleteValidator extends AbstractResponseValidator
      */
     protected function validateTotalAmount(array $response, $amount)
     {
-        return isset($response[self::TOTAL_AMOUNT])
-            && (string)($response[self::TOTAL_AMOUNT]) === (string)$amount;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function getSignatureArray()
-    {
-        return [
-            AbstractDataBuilder::PARTNER_CODE,
-            AbstractDataBuilder::ACCESS_KEY,
-            AbstractDataBuilder::REQUEST_ID,
-            self::TOTAL_AMOUNT,
-            AbstractDataBuilder::ORDER_ID,
-            AbstractDataBuilder::ORDER_INFO,
-            self::ORDER_TYPE,
-            self::TRANSACTION_ID,
-            self::RESPONSE_MESSAGE,
-            self::RESPONSE_LOCAL_MESSAGE,
-            self::RESPONSE_TIME,
-            self::ERROR_CODE,
-            self::PAY_TYPE,
-            AbstractDataBuilder::EXTRA_DATA
-        ];
+        return isset($response[AbstractDataBuilder::TRANS_DATA][self::TOTAL_AMOUNT])
+            && (string)($response[AbstractDataBuilder::TRANS_DATA][self::TOTAL_AMOUNT]) === (string)$amount;
     }
 }
